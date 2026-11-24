@@ -1,4 +1,9 @@
-const API_BASE = '/api';
+const isLocal = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const API_BASE = isLocal 
+  ? 'http://127.0.0.1:5003/api' 
+  : '/api';
 
 export async function apiRequest<T = any>(
   endpoint: string,

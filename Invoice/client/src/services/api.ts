@@ -1,4 +1,9 @@
-const API_BASE = 'https://oms-invoice-api.vercel.app/api';
+const isLocal = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const API_BASE = isLocal 
+  ? 'http://127.0.0.1:5001/api' 
+  : 'https://oms-invoice-api.vercel.app/api';
 
 export const getAuthToken = (): string | null => {
   return localStorage.getItem('oms_token');

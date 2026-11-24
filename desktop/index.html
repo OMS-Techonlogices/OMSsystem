@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMS Business Suite - One Media Solution</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0B0F17;
+      color: #FFFFFF;
+    }
+
+    /* Custom Title Bar */
+    .title-bar {
+      height: 54px;
+      background-color: #141414;
+      border-bottom: 1px solid #262626;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      -webkit-app-region: drag;
+      z-index: 1000;
+      position: relative;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      -webkit-app-region: no-drag;
+      cursor: pointer;
+    }
+
+    /* Company Logo Badge in Header */
+    .header-logo-container {
+      background: #FFFFFF;
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      height: 38px;
+    }
+
+    .header-logo-img {
+      height: 30px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      background: rgba(220, 38, 38, 0.2);
+      color: #EF4444;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      padding: 1px 6px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      color: #A3A3A3;
+      font-weight: 500;
+    }
+
+    .brand-sub span {
+      color: #DC2626;
+      font-weight: 700;
+    }
+
+    /* Navigation Tabs & Home Button */
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      -webkit-app-region: no-drag;
+    }
+
+    .home-btn {
+      background: #262626;
+      border: 1px solid #3B3B3B;
+      color: #FFFFFF;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .home-btn:hover {
+      background: #DC2626;
+      border-color: #EF4444;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #A3A3A3;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      background: #262626;
+      color: #FFFFFF;
+    }
+
+    .tab-btn.active {
+      background: #DC2626;
+      color: #FFFFFF;
+      border-color: #EF4444;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #737373;
+    }
+
+    .status-dot.online {
+      background: #22C55E;
+      box-shadow: 0 0 6px #22C55E;
+    }
+
+    .status-dot.offline {
+      background: #EF4444;
+    }
+
+    /* Actions & Window Controls */
+    .window-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      -webkit-app-region: no-drag;
+    }
+
+    .action-btn {
+      background: #262626;
+      border: 1px solid #333333;
+      color: #D4D4D4;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      background: #3B3B3B;
+      color: #FFFFFF;
+    }
+
+    .window-btn {
+      background: transparent;
+      border: none;
+      color: #A3A3A3;
+      width: 34px;
+      height: 30px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+
+    .window-btn:hover {
+      background: #262626;
+      color: #FFFFFF;
+    }
+
+    .window-btn.close:hover {
+      background: #DC2626;
+      color: #FFFFFF;
+    }
+
+    /* Main Viewport */
+    .app-viewport {
+      width: 100%;
+      height: calc(100% - 54px);
+      position: relative;
+      background: #0B0F17;
+    }
+
+    .portal-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: none;
+      background: #FFFFFF;
+    }
+
+    .portal-frame.active {
+      display: block;
+    }
+
+    /* ========================================================
+       WELCOME / PORTAL SELECTION SCREEN (الصفحة الرئيسية)
+       ======================================================== */
+    .welcome-screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 30px 24px;
+      overflow-y: auto;
+      background: radial-gradient(circle at 50% 20%, #1A0D10 0%, #0A0A0A 80%);
+      text-align: center;
+    }
+
+    .welcome-screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-container {
+      max-width: 980px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Big Logo Presentation */
+    .welcome-logo-box {
+      background: #FFFFFF;
+      padding: 18px 36px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.25), 0 2px 10px rgba(0, 0, 0, 0.3);
+      animation: fadeInDown 0.6s ease-out;
+    }
+
+    .welcome-logo-img {
+      height: 75px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .welcome-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .welcome-title span {
+      color: #DC2626;
+    }
+
+    .welcome-desc {
+      font-size: 14px;
+      color: #A3A3A3;
+      margin-bottom: 34px;
+      font-weight: 500;
+    }
+
+    /* Cards Grid */
+    .portals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      margin-bottom: 30px;
+      text-align: right;
+    }
+
+    @media (max-width: 900px) {
+      .portals-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .portal-card {
+      background: #141414;
+      border: 1px solid #262626;
+      border-radius: 18px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .portal-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: #DC2626;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .portal-card:hover {
+      transform: translateY(-5px);
+      border-color: #DC2626;
+      box-shadow: 0 12px 30px rgba(220, 38, 38, 0.2);
+      background: #171717;
+    }
+
+    .portal-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-icon-box {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: rgba(220, 38, 38, 0.12);
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      color: #DC2626;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .portal-badge-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .portal-badge-status.online {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ADE80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .portal-badge-status.offline {
+      background: rgba(239, 68, 68, 0.15);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .card-main-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+    }
+
+    .card-port-tag {
+      font-size: 11px;
+      color: #737373;
+      direction: ltr;
+      display: inline-block;
+      margin-bottom: 12px;
+      font-family: monospace;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: #A3A3A3;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+
+    .card-enter-btn {
+      width: 100%;
+      background: #DC2626;
+      color: #FFFFFF;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .portal-card:hover .card-enter-btn {
+      background: #B91C1C;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    }
+
+    /* Server Controls Quick Banner at bottom */
+    .services-banner {
+      background: #141414;
+      border: 1px solid #262626;
+      border-radius: 14px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: right;
+    }
+
+    .banner-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 3px;
+    }
+
+    .banner-sub {
+      font-size: 11px;
+      color: #737373;
+    }
+
+    .banner-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action-banner {
+      background: #DC2626;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-action-banner:hover {
+      background: #B91C1C;
+    }
+
+    .btn-secondary-banner {
+      background: #262626;
+      color: #FFFFFF;
+      border: 1px solid #3B3B3B;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary-banner:hover {
+      background: #3B3B3B;
+    }
+
+    /* Offline Alert Overlay */
+    .offline-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(11, 15, 23, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .offline-overlay.active {
+      display: flex;
+    }
+
+    .offline-box {
+      background: #171717;
+      border: 1px solid #262626;
+      border-radius: 18px;
+      padding: 32px;
+      max-width: 460px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .offline-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .offline-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #FFFFFF;
+    }
+
+    .offline-desc {
+      font-size: 13px;
+      color: #A3A3A3;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Title Bar -->
+  <header class="title-bar">
+    <!-- Brand Info with Company Logo -->
+    <div class="brand-section" onclick="switchPortal('welcome')" title="الرجوع لصفحة اختيار المنصة">
+      <div class="header-logo-container">
+        <img src="assets/logo-cropped.png" alt="OMS Logo" class="header-logo-img" />
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">
+          <span>OMS Business Suite</span>
+          <span class="brand-badge">Desktop</span>
+        </div>
+        <div class="brand-sub">one media solution • <span>MDE</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="home-btn" onclick="switchPortal('welcome')" title="اختيار قسم آخر">
+        <span>🏠 اختيار المنصة</span>
+      </button>
+
+      <div style="width: 1px; height: 18px; background: #333333; margin: 0 4px;"></div>
+
+      <button class="tab-btn" data-portal="invoice" onclick="switchPortal('invoice')">
+        <span class="status-dot" id="dot-invoice"></span>
+        <span>📄 قسم المحاسبة (Invoice)</span>
+      </button>
+
+      <button class="tab-btn" data-portal="media" onclick="switchPortal('media')">
+        <span class="status-dot" id="dot-media"></span>
+        <span>📺 قسم الميديا (Media)</span>
+      </button>
+
+      <button class="tab-btn" data-portal="admin" onclick="switchPortal('admin')">
+        <span class="status-dot" id="dot-admin"></span>
+        <span>🛡️ الإدارة المركزية (Admin)</span>
+      </button>
+    </nav>
+
+    <!-- Window Controls & Shortcuts -->
+    <div class="window-actions">
+      <button class="action-btn" onclick="reloadCurrentPortal()" title="إعادة تحميل الصفحة (Reload)">↻</button>
+      <button class="action-btn" onclick="zoomIn()" title="تكبير (+)">+</button>
+      <button class="action-btn" onclick="zoomOut()" title="تصغير (-)">-</button>
+      <button class="action-btn" onclick="printCurrentPortal()" title="طباعة الصفحة أو الفاتورة">🖨️</button>
+
+      <div style="width: 1px; height: 18px; background: #333333; margin: 0 4px;"></div>
+
+      <button class="window-btn" onclick="window.omsDesktop.minimize()" title="تصغير">&#8722;</button>
+      <button class="window-btn" id="max-btn" onclick="window.omsDesktop.maximize()" title="تكبير/استعادة">&#9633;</button>
+      <button class="window-btn close" onclick="window.omsDesktop.close()" title="إغلاق">&#10005;</button>
+    </div>
+  </header>
+
+  <!-- Viewport for Portals -->
+  <main class="app-viewport">
+    
+    <!-- 1. WELCOME / PORTAL SELECTION SCREEN (افتراضياً عند فتح البرنامج) -->
+    <section id="welcome-screen" class="welcome-screen active">
+      <div class="hero-container">
+        
+        <!-- Big Official Logo Presentation -->
+        <div class="welcome-logo-box">
+          <img src="assets/logo-cropped.png" alt="OMS - one media solution" class="welcome-logo-img" />
+        </div>
+
+        <h1 class="welcome-title">مرحباً بك في منظومة <span>OMS</span> الشاملة</h1>
+        <p class="welcome-desc">اختر المنصة التي ترغب في تسجيل الدخول إليها ومتابعة العمل:</p>
+
+        <!-- The 3 Portal Cards -->
+        <div class="portals-grid">
+          
+          <!-- Card 1: Invoice / Accounting -->
+          <div class="portal-card" onclick="switchPortal('invoice')">
+            <div>
+              <div class="card-head">
+                <div class="card-icon-box">📄</div>
+                <div id="badge-invoice" class="portal-badge-status offline">
+                  <span class="status-dot offline"></span>
+                  <span>فحص...</span>
+                </div>
+              </div>
+              <div class="card-main-title">قسم المحاسبة والفواتير</div>
+              <div class="card-port-tag">OMS INVOICE • Port 5173</div>
+              <p class="card-desc">
+                إدارة دورة حياة الفواتير المحاسبية، الضرائب الرسمية (VAT 14% و WHT 1%)، الاعتمادات المالية متعددة المستويات، وسجلات المدفوعات والعملاء.
+              </p>
+            </div>
+            <button class="card-enter-btn">
+              <span>تسجيل الدخول لقسم المحاسبة</span>
+              <span>←</span>
+            </button>
+          </div>
+
+          <!-- Card 2: Media Department -->
+          <div class="portal-card" onclick="switchPortal('media')">
+            <div>
+              <div class="card-head">
+                <div class="card-icon-box">📺</div>
+                <div id="badge-media" class="portal-badge-status offline">
+                  <span class="status-dot offline"></span>
+                  <span>فحص...</span>
+                </div>
+              </div>
+              <div class="card-main-title">قسم الميديا والإعلانات</div>
+              <div class="card-port-tag">OMS MEDIA • Port 5174</div>
+              <p class="card-desc">
+                تخطيط الحملات الإعلانية ومتابعتها، إدارة القنوات التلفزيونية والموردين، حساب التكاليف وهوامش الأرباح وتصدير تقارير Excel و CSV.
+              </p>
+            </div>
+            <button class="card-enter-btn">
+              <span>تسجيل الدخول لقسم الميديا</span>
+              <span>←</span>
+            </button>
+          </div>
+
+          <!-- Card 3: Central Admin -->
+          <div class="portal-card" onclick="switchPortal('admin')">
+            <div>
+              <div class="card-head">
+                <div class="card-icon-box">🛡️</div>
+                <div id="badge-admin" class="portal-badge-status offline">
+                  <span class="status-dot offline"></span>
+                  <span>فحص...</span>
+                </div>
+              </div>
+              <div class="card-main-title">بوابة الإدارة المركزية</div>
+              <div class="card-port-tag">OMS ADMIN • Port 5175</div>
+              <p class="card-desc">
+                لوحة الإدارة المركزية لإدارة حسابات الموظفين، ضبط وتوزيع صلاحيات الوصول للأنظمة (MEDIA / INVOICE / ALL)، وتأمين بيئة العمل.
+              </p>
+            </div>
+            <button class="card-enter-btn">
+              <span>تسجيل الدخول لبوابة الإدارة</span>
+              <span>←</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Server Controls Quick Banner -->
+        <div class="services-banner">
+          <div>
+            <div class="banner-title">⚡ الخوادم والاتصال المحلي</div>
+            <div class="banner-sub">يمكنك تشغيل كافة خوادم المنظومة دفعة واحدة أو التحقق من جاهزية الاتصال.</div>
+          </div>
+          <div class="banner-actions">
+            <button class="btn-action-banner" onclick="startAllServices()">▶ تشغيل كافة الخدمات</button>
+            <button class="btn-secondary-banner" onclick="checkAllServices(true)">↻ فحص الاتصال</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. Invoice Portal Frame -->
+    <iframe id="frame-invoice" class="portal-frame" data-src="http://localhost:5173" allow="clipboard-read; clipboard-write; printing"></iframe>
+
+    <!-- 3. Media Portal Frame -->
+    <iframe id="frame-media" class="portal-frame" data-src="http://localhost:5174" allow="clipboard-read; clipboard-write; printing"></iframe>
+
+    <!-- 4. Admin Portal Frame -->
+    <iframe id="frame-admin" class="portal-frame" data-src="http://localhost:5175" allow="clipboard-read; clipboard-write; printing"></iframe>
+
+    <!-- Offline Notification Screen -->
+    <div id="offline-screen" class="offline-overlay">
+      <div class="offline-box">
+        <div class="offline-icon">⚠️</div>
+        <div class="offline-title" id="offline-system-name">النظام غير متاح حالياً</div>
+        <div class="offline-desc" id="offline-system-desc">
+          خادم هذا القسم غير متصل حالياً أو ما زال قيد الإقلاع. اضغط على الزر أدناه لبدء تشغيله فوراً.
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button class="btn-action-banner" onclick="startAllServices()">🚀 تشغيل الخوادم</button>
+          <button class="btn-secondary-banner" onclick="switchPortal('welcome')">العودة للاختيار</button>
+          <button class="btn-secondary-banner" onclick="checkAllServices(true)">↻ إعادة فحص</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let currentPortal = 'welcome';
+    let currentZoom = 1.0;
+    const servicesState = {
+      invoice: false,
+      media: false,
+      admin: false
+    };
+
+    const portalUrls = {
+      invoice: 'http://localhost:5173',
+      media: 'http://localhost:5174',
+      admin: 'http://localhost:5175'
+    };
+
+    function switchPortal(portal) {
+      currentPortal = portal;
+
+      // Update Navigation Tabs State
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.portal === portal);
+      });
+
+      // Update Active Frames & Views
+      document.querySelectorAll('.portal-frame').forEach(frame => {
+        frame.classList.remove('active');
+      });
+
+      const welcomeScreen = document.getElementById('welcome-screen');
+      const offlineScreen = document.getElementById('offline-screen');
+
+      if (portal === 'welcome') {
+        welcomeScreen.classList.add('active');
+        offlineScreen.classList.remove('active');
+      } else {
+        welcomeScreen.classList.remove('active');
+        const activeFrame = document.getElementById(`frame-${portal}`);
+        if (activeFrame) {
+          activeFrame.classList.add('active');
+          if (!activeFrame.src || activeFrame.src === 'about:blank' || activeFrame.src === window.location.href) {
+            activeFrame.src = activeFrame.dataset.src || portalUrls[portal];
+          }
+        }
+
+        // Show offline warning if server not detected
+        if (servicesState[portal] === false) {
+          showOfflineScreen(portal);
+        } else {
+          offlineScreen.classList.remove('active');
+        }
+      }
+    }
+
+    function showOfflineScreen(portal) {
+      const names = {
+        invoice: 'قسم المحاسبة والفواتير (Invoice System)',
+        media: 'قسم الميديا والإعلانات (Media Department)',
+        admin: 'بوابة الإدارة المركزية (Admin Portal)'
+      };
+      document.getElementById('offline-system-name').textContent = `${names[portal]} غير متاح حالياً`;
+      document.getElementById('offline-system-desc').textContent = `خادم هذا القسم على المنفذ ${portalUrls[portal]} لم يستجب. تأكد من تشغيل السيرفرات بالضغط أدناه.`;
+      document.getElementById('offline-screen').classList.add('active');
+    }
+
+    function reloadCurrentPortal() {
+      if (currentPortal === 'welcome') {
+        checkAllServices(true);
+        return;
+      }
+      reloadFrame(currentPortal);
+    }
+
+    function reloadFrame(portal) {
+      const frame = document.getElementById(`frame-${portal}`);
+      if (frame) {
+        frame.src = portalUrls[portal];
+      }
+    }
+
+    function zoomIn() {
+      currentZoom = Math.min(1.5, currentZoom + 0.05);
+      applyZoom();
+    }
+
+    function zoomOut() {
+      currentZoom = Math.max(0.75, currentZoom - 0.05);
+      applyZoom();
+    }
+
+    function applyZoom() {
+      document.querySelectorAll('.portal-frame').forEach(f => {
+        f.style.zoom = currentZoom;
+      });
+    }
+
+    function printCurrentPortal() {
+      if (window.omsDesktop) {
+        window.omsDesktop.print();
+      } else {
+        window.print();
+      }
+    }
+
+    async function startAllServices() {
+      if (window.omsDesktop) {
+        await window.omsDesktop.startServices();
+        alert('تم إرسال أمر تشغيل خوادم OMS بنجاح! جاري الانتظار والفحص...');
+        setTimeout(() => checkAllServices(true), 3500);
+      }
+    }
+
+    async function checkAllServices(userTriggered = false) {
+      if (!window.omsDesktop) return;
+
+      try {
+        const res = await window.omsDesktop.checkServices();
+        
+        servicesState.invoice = res.invoice.frontend;
+        servicesState.media = res.media.frontend;
+        servicesState.admin = res.admin.frontend;
+
+        // Update Nav Dots
+        updateDot('dot-invoice', res.invoice.frontend);
+        updateDot('dot-media', res.media.frontend);
+        updateDot('dot-admin', res.admin.frontend);
+
+        // Update Welcome Screen Badges
+        updateWelcomeBadge('badge-invoice', res.invoice.frontend);
+        updateWelcomeBadge('badge-media', res.media.frontend);
+        updateWelcomeBadge('badge-admin', res.admin.frontend);
+
+        // If currently on an offline portal that just came online, reload it
+        if (currentPortal !== 'welcome' && servicesState[currentPortal]) {
+          const offlineScreen = document.getElementById('offline-screen');
+          if (offlineScreen.classList.contains('active')) {
+            offlineScreen.classList.remove('active');
+            reloadFrame(currentPortal);
+          }
+        }
+
+        if (userTriggered) {
+          console.log('Services check completed:', res);
+        }
+      } catch (err) {
+        console.error('Failed to check services:', err);
+      }
+    }
+
+    function updateDot(id, isOnline) {
+      const dot = document.getElementById(id);
+      if (dot) {
+        dot.className = `status-dot ${isOnline ? 'online' : 'offline'}`;
+      }
+    }
+
+    function updateWelcomeBadge(id, isOnline) {
+      const badge = document.getElementById(id);
+      if (!badge) return;
+
+      if (isOnline) {
+        badge.className = 'portal-badge-status online';
+        badge.innerHTML = '<span class="status-dot online"></span><span>متصل وجاهز</span>';
+      } else {
+        badge.className = 'portal-badge-status offline';
+        badge.innerHTML = '<span class="status-dot offline"></span><span>غير متصل</span>';
+      }
+    }
+
+    // Auto check services periodically every 4 seconds
+    setInterval(checkAllServices, 4000);
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const initial = params.get('initialPortal');
+      if (initial && ['invoice', 'media', 'admin'].includes(initial)) {
+        switchPortal(initial);
+      } else {
+        switchPortal('welcome'); // Open the Welcome Selection Screen by default!
+      }
+
+      checkAllServices();
+
+      // Listen for window state changes
+      if (window.omsDesktop) {
+        window.omsDesktop.onWindowStateChange((state) => {
+          const maxBtn = document.getElementById('max-btn');
+          if (maxBtn) {
+            maxBtn.innerHTML = state.isMaximized ? '&#10064;' : '&#9633;';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

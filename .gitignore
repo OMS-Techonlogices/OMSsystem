@@ -21,3 +21,9 @@ backend/data/
 # Local IDE files
 .vscode/
 .idea/
+
+# Executables & Desktop release artifacts
+*.exe
+release/
+desktop/release/
+desktop/dist-exe/

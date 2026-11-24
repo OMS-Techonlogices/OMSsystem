@@ -1,0 +1,62 @@
+{
+  "name": "oms-desktop-suite",
+  "version": "1.0.0",
+  "description": "OMS Business Suite Desktop Application - Matrix Data Egypt (MDE)",
+  "main": "main.cjs",
+  "author": "Matrix Data Egypt",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "icon": "node create-icon.cjs",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.matrixdataegypt.oms",
+    "productName": "OMS Business Suite",
+    "copyright": "Copyright © 2026 Matrix Data Egypt (MDE)",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "OMS Business Suite",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "index.html",
+      "assets/**/*",
+      "dist-portals/**/*"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "pngjs": "^7.0.0",
+    "to-ico": "^1.4.1"
+  }
+}

@@ -42,8 +42,8 @@ export const Login: React.FC = () => {
 
         {/* Brand Header */}
         <div className="text-center space-y-2 relative">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-neutral-900 to-neutral-800 border border-neutral-700/80 mx-auto flex items-center justify-center shadow-xl shadow-black/50 text-[#DC2626]">
-            <Tv className="w-8 h-8" />
+          <div className="bg-white px-4 py-2 rounded-2xl inline-block mx-auto shadow-xl shadow-red-950/40">
+            <img src="/logo.png" alt="OMS Logo" className="h-10 w-auto object-contain mx-auto" />
           </div>
           <h1 className="text-2xl font-black text-white tracking-wide flex items-center justify-center gap-2">
             <span>OMS Media</span>

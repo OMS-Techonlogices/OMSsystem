@@ -38,8 +38,8 @@ export const Login: React.FC = () => {
       <div className="w-full max-w-md bg-[#171717] rounded-3xl border border-neutral-800 shadow-2xl p-8 space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-2xl bg-[#DC2626] mx-auto flex items-center justify-center font-black text-3xl text-white shadow-xl shadow-red-900/50">
-            OMS
+          <div className="bg-white px-4 py-2 rounded-2xl inline-block mx-auto shadow-xl shadow-red-950/40">
+            <img src="/logo.png" alt="OMS Logo" className="h-10 w-auto object-contain mx-auto" />
           </div>
           <h1 className="text-2xl font-black text-white tracking-wide">OMS Invoice</h1>
           <p className="text-xs text-neutral-400 font-medium">

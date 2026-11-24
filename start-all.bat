@@ -5,8 +5,8 @@ echo   Developed by MDE - Matrix Data Egypt
 echo ====================================================
 
 echo [1/3] Starting Invoice Accounting System...
-start cmd /k "cd server && npm run dev"
-start cmd /k "cd client && npm run dev"
+start cmd /k "cd Invoice\server && npm run dev"
+start cmd /k "cd Invoice\client && npm run dev"
 
 echo [2/3] Starting Media Department System...
 start cmd /k "cd media\backend && npm run dev"

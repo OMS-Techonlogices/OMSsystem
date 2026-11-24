@@ -1,5 +1,10 @@
 
-const API_BASE = 'https://oms-media-api.vercel.app/api';
+const isLocal = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const API_BASE = isLocal 
+  ? 'http://127.0.0.1:5002/api' 
+  : 'https://oms-media-api.vercel.app/api';
 
 export async function apiRequest<T = any>(
   endpoint: string,

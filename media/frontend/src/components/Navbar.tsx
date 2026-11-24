@@ -10,8 +10,8 @@ export const Navbar: React.FC = () => {
       <div className="flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#DC2626] flex items-center justify-center font-black text-xl text-white shadow-lg shadow-red-900/40">
-            OMS
+          <div className="bg-white px-2 py-1 rounded-xl flex items-center justify-center shadow-md">
+            <img src="/logo.png" alt="OMS Logo" className="h-7 w-auto object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-2">
