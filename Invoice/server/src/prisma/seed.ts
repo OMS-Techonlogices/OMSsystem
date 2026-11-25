@@ -1,5 +1,5 @@
 
-import prisma from './prismaClient';
+import prisma from './prismaClient.js';
 import bcrypt from 'bcryptjs';
 
 const UserRole = {

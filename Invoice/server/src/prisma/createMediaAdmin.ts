@@ -1,7 +1,7 @@
 
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import prisma from './prismaClient';
+import prisma from './prismaClient.js';
 
 dotenv.config();
 

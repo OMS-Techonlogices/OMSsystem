@@ -33,7 +33,7 @@ export const createService = async (req: AuthenticatedRequest, res: Response): P
     }
 
     const service = await prisma.service.create({
-      data: parseResult.data,
+      data: parseResult.data as any,
     });
 
     res.status(201).json({ success: true, data: service, message: 'تم إضافة الخدمة بنجاح' });

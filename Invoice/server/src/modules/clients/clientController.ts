@@ -64,7 +64,7 @@ export const createClient = async (req: AuthenticatedRequest, res: Response): Pr
     }
 
     const client = await prisma.client.create({
-      data: parseResult.data,
+      data: parseResult.data as any,
     });
 
     res.status(201).json({ success: true, data: client, message: 'تم إضافة العميل بنجاح' });
