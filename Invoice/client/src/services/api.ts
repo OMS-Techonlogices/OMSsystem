@@ -43,8 +43,8 @@ export async function apiRequest<T = any>(
     if (!res.ok) {
       if (res.status === 401) {
         clearAuthToken();
-        if (!window.location.pathname.endsWith('/login')) {
-          window.location.href = '/OMS/invoice/login';
+        if (!window.location.hash.includes('/login')) {
+          window.location.hash = '#/login';
         }
       }
       return {

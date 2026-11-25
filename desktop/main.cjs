@@ -97,9 +97,13 @@ function registerPortalProtocol() {
       return new Response('Forbidden', { status: 403 });
     }
 
-    // Serve the file, or fallback to index.html for SPA routing
+    // Serve the file, or fallback to index.html ONLY for non-asset SPA routes
     let servePath = fullPath;
-    if (!fs.existsSync(fullPath)) {
+    if (!fs.existsSync(fullPath) || fs.statSync(fullPath).isDirectory()) {
+      const ext = path.extname(filePath);
+      if (ext && ext !== '.html') {
+        return new Response('Not Found', { status: 404 });
+      }
       servePath = path.join(portalsDir, portal, 'index.html');
     }
 
