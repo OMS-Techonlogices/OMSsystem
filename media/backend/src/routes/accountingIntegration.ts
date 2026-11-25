@@ -200,43 +200,9 @@ async function requireMediaOrAccountingAccess(
       return;
     }
 
-    // For media users, find an accounting admin to act as createdById in the invoice.
-    // The actual media user is recorded in the audit log details.
-    if (!ACCOUNTING_ROLES.includes(user.role) || !['INVOICE', 'ALL'].includes(user.systemAccess)) {
-      // Media user: find a suitable accounting user to stamp the invoice.
-      const adminUsers = await prisma.$queryRaw<AccountingUser[]>`
-        SELECT id, name, username, role, "systemAccess", "isActive"
-        FROM "public"."users"
-        WHERE role IN ('ADMIN', 'FINANCE_MANAGER', 'ACCOUNTANT')
-          AND "systemAccess" IN ('INVOICE', 'ALL')
-          AND "isActive" = true
-        ORDER BY
-          CASE role
-            WHEN 'FINANCE_MANAGER' THEN 1
-            WHEN 'ACCOUNTANT' THEN 2
-            WHEN 'ADMIN' THEN 3
-            ELSE 4
-          END
-        LIMIT 1
-      `;
-
-      if (!adminUsers || adminUsers.length === 0) {
-        res.status(403).json({
-          success: false,
-          message: 'لا يوجد مستخدم محاسبة متاح لإصدار الفاتورة. يرجى التواصل مع قسم المحاسبة.',
-        });
-        return;
-      }
-
-      // Attach the accounting user but flag that the actual actor is the media user.
-      req.accountingUser = {
-        ...adminUsers[0],
-        // Encode both so the audit log can reference the real actor.
-      };
-      (req as any).mediaActorUser = user;
-    } else {
-      req.accountingUser = user;
-    }
+    // كل مستخدم متصرح له (محاسب / مدير مالي / أدمين / ميديا) يستخدم هويته مباشرةً
+    // دون الحاجة للبحث عن مستخدم محاسبة آخر في قاعدة البيانات.
+    req.accountingUser = user;
 
     next();
   } catch (error) {
