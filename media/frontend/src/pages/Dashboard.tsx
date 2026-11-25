@@ -287,6 +287,7 @@ export const Dashboard: React.FC = () => {
 
       return {
         'العميل (Client)': record.client?.name || '',
+        'السجل الضريبي (Tax Number)': record.client?.taxNumber || '',
         'المورد (Supplier)': record.supplier?.name || '',
         'القناة (Channel)': record.channel?.name || '',
         'نوع المحتوى (Content Type)': record.content?.contentType?.name || 'عام',
@@ -1440,6 +1441,7 @@ export const Dashboard: React.FC = () => {
             <thead className="bg-[#171717] text-white font-black">
               <tr>
                 <th className="p-3.5 text-start">Client</th>
+                <th className="p-3.5 text-start">السجل الضريبي</th>
                 <th className="p-3.5 text-start">supplier</th>
                 <th className="p-3.5 text-start">Channel</th>
                 <th className="p-3.5 text-start">Content Type</th>
@@ -1458,13 +1460,13 @@ export const Dashboard: React.FC = () => {
             <tbody className="divide-y divide-neutral-100 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={13} className="p-12 text-center text-neutral-400 font-bold">
+                  <td colSpan={14} className="p-12 text-center text-neutral-400 font-bold">
                     جاري تحميل البيانات...
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="p-12 text-center text-neutral-400 font-bold">
+                  <td colSpan={14} className="p-12 text-center text-neutral-400 font-bold">
                     لا توجد بيانات مطابقة. يمكنك استخدام زر Import لاستيراد ملف البيانات أو إضافة حملة يدوياً.
                   </td>
                 </tr>
@@ -1482,6 +1484,16 @@ export const Dashboard: React.FC = () => {
                     >
                       <td className="p-3.5 font-black text-neutral-900 text-sm whitespace-nowrap">
                         {record.client?.name || '-'}
+                      </td>
+
+                      <td className="p-3.5 whitespace-nowrap">
+                        {record.client?.taxNumber ? (
+                          <span className="font-mono text-xs font-bold text-neutral-700 bg-neutral-100 px-2 py-0.5 rounded-md border border-neutral-200">
+                            {record.client.taxNumber}
+                          </span>
+                        ) : (
+                          <span className="text-neutral-400 text-xs">-</span>
+                        )}
                       </td>
 
                       <td className="p-3.5 font-bold text-neutral-700 whitespace-nowrap">
