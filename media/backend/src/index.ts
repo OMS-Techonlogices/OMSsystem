@@ -29,7 +29,8 @@ app.use(
       const isLocalhost =
         /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
         origin.startsWith('app://') ||
-        origin.startsWith('file://');
+        origin.startsWith('file://') ||
+        origin.startsWith('oms-portal://');
 
       if (
         isLocalhost ||
