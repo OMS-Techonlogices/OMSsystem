@@ -160,11 +160,12 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
     const userRole = req.user.role;
     const requiredRole = pendingStep.rule?.requiredRole;
 
-    const roleHierarchies: Record<UserRole, number> = {
+    const roleHierarchies: Record<string, number> = {
       SALES: 1,
       ACCOUNTANT: 2,
       FINANCE_MANAGER: 3,
       ADMIN: 4,
+      MEDIA_ADMIN: 2,
     };
 
     if (
