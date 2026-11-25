@@ -155,26 +155,17 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
       return;
     }
 
-    // Check Role Authority
-    // Admin has super approval power; otherwise role must match or exceed requiredRole
-    const userRole = req.user.role;
-    const requiredRole = pendingStep.rule?.requiredRole;
+    // Any accounting role (ADMIN, FINANCE_MANAGER, ACCOUNTANT) can approve any invoice level
+    const ALLOWED_APPROVER_ROLES: UserRole[] = [
+      UserRole.ADMIN,
+      UserRole.FINANCE_MANAGER,
+      UserRole.ACCOUNTANT,
+    ];
 
-    const roleHierarchies: Record<string, number> = {
-      SALES: 1,
-      ACCOUNTANT: 2,
-      FINANCE_MANAGER: 3,
-      ADMIN: 4,
-      MEDIA_ADMIN: 2,
-    };
-
-    if (
-      userRole !== UserRole.ADMIN &&
-      roleHierarchies[userRole] < (requiredRole ? roleHierarchies[requiredRole] : 3)
-    ) {
+    if (!ALLOWED_APPROVER_ROLES.includes(req.user.role)) {
       res.status(403).json({
         success: false,
-        message: `هذا المستوى من الفواتير يتطلب اعتماد رتبة (${requiredRole}) أو أعلى`,
+        message: 'غير مصرح لك باعتماد الفواتير',
       });
       return;
     }
