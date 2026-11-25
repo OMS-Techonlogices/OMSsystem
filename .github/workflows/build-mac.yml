@@ -1,0 +1,70 @@
+name: Build OMS Desktop (macOS)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'desktop/**'
+      - 'Invoice/client/**'
+      - 'media/frontend/**'
+      - 'admin/frontend/**'
+      - '.github/workflows/build-mac.yml'
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Invoice Frontend
+        working-directory: Invoice/client
+        run: |
+          npm install
+          npm run build
+
+      - name: Build Media Frontend
+        working-directory: media/frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Build Admin Frontend
+        working-directory: admin/frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Prepare Embedded Portals
+        run: |
+          mkdir -p desktop/portals/invoice desktop/portals/media desktop/portals/admin
+          cp -R Invoice/client/dist/* desktop/portals/invoice/
+          cp -R media/frontend/dist/* desktop/portals/media/
+          cp -R admin/frontend/dist/* desktop/portals/admin/
+
+      - name: Install Desktop Dependencies
+        working-directory: desktop
+        run: npm install
+
+      - name: Build macOS (.dmg & .zip)
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npm run dist:mac
+
+      - name: Upload macOS Installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: OMS-Business-Suite-macOS
+          path: |
+            desktop/release/*.dmg
+            desktop/release/*.zip
+          retention-days: 30
