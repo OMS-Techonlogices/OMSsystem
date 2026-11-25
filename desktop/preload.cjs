@@ -7,8 +7,10 @@ contextBridge.exposeInMainWorld('omsDesktop', {
   close: () => ipcRenderer.send('window-close'),
   isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
   
-  // Health checks
+  // Config & Health checks
+  getAppConfig: () => ipcRenderer.invoke('get-app-config'),
   checkServices: () => ipcRenderer.invoke('check-services'),
+  recheckServices: () => ipcRenderer.invoke('recheck-services'),
   
   // Launch / Restart local services
   startServices: () => ipcRenderer.invoke('start-services'),

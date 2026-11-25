@@ -35,17 +35,18 @@
       "preload.cjs",
       "index.html",
       "assets/**/*",
-      "config/oms-desktop.config.json",
+      "portals/**/*",
       "!**/*.map"
     ],
     "extraResources": [
       {
-        "from": "config/oms-desktop.config.json",
-        "to": "config/oms-desktop.config.json"
+        "from": "portals",
+        "to": "portals"
       }
     ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
+      "icon": "assets/icon.ico",
       "target": [
         {
           "target": "nsis",

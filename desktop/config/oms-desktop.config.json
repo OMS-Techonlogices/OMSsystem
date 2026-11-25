@@ -1,16 +1,16 @@
 {
   "portals": {
     "invoice": {
-      "url": "",
-      "healthUrl": ""
+      "url": "https://oms-invoice-api-two.vercel.app",
+      "healthUrl": "https://oms-invoice-api-two.vercel.app/api/health"
     },
     "media": {
-      "url": "",
-      "healthUrl": ""
+      "url": "https://oms-media-backend.vercel.app",
+      "healthUrl": "https://oms-media-backend.vercel.app/api/health"
     },
     "admin": {
-      "url": "",
-      "healthUrl": ""
+      "url": "https://oms-admin-api.vercel.app",
+      "healthUrl": "https://oms-admin-api.vercel.app/api/health"
     }
   }
 }

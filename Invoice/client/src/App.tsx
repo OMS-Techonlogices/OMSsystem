@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
 import { LanguageProvider } from './context/LanguageContext.js';
 import { Navbar } from './components/Navbar.js';
@@ -51,7 +51,7 @@ export const App: React.FC = () => {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route
@@ -144,7 +144,7 @@ export const App: React.FC = () => {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </AuthProvider>
     </LanguageProvider>
   );

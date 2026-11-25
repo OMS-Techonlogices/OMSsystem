@@ -1,87 +1,135 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, protocol: electronProtocol, net } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const { pathToFileURL } = require('url');
 
 const APP_ID = 'com.matrixdataegypt.oms';
 const PORTALS = ['invoice', 'media', 'admin'];
-const DEFAULT_CONFIG = {
-  portals: {
-    invoice: { url: '', healthUrl: '' },
-    media: { url: '', healthUrl: '' },
-    admin: { url: '', healthUrl: '' }
+
+// ==========================================
+// Custom Protocol Registration (before app ready)
+// Must be called synchronously at module level
+// ==========================================
+electronProtocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'oms-portal',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      allowServiceWorkers: false
+    }
   }
+]);
+
+// ==========================================
+// Config & Globals
+// ==========================================
+const BACKEND_URLS = {
+  invoice: 'https://oms-invoice-api-two.vercel.app',
+  media: 'https://oms-media-backend.vercel.app',
+  admin: 'https://oms-admin-api.vercel.app'
 };
 
 let mainWindow = null;
-let appConfig = DEFAULT_CONFIG;
 let quitting = false;
 
-function isAllowedPortalUrl(value) {
-  if (typeof value !== 'string' || !value.trim()) return false;
-  try {
-    const parsed = new URL(value);
-    if (app.isPackaged) return parsed.protocol === 'https:';
-    return parsed.protocol === 'https:' ||
-      (parsed.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(parsed.hostname));
-  } catch {
-    return false;
+// ==========================================
+// Portal File Serving via Custom Protocol
+// ==========================================
+function getPortalsDir() {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'portals');
   }
+  return path.join(__dirname, 'portals');
 }
 
-function normalizeConfig(raw) {
-  const normalized = { portals: {} };
-  for (const name of PORTALS) {
-    const entry = raw?.portals?.[name] || {};
-    const url = isAllowedPortalUrl(entry.url) ? new URL(entry.url).toString().replace(/\/$/, '') : '';
-    const healthUrl = isAllowedPortalUrl(entry.healthUrl)
-      ? new URL(entry.healthUrl).toString()
-      : url;
-    normalized.portals[name] = { url, healthUrl };
-  }
-  return normalized;
+function getMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeTypes = {
+    '.html': 'text/html',
+    '.js': 'application/javascript',
+    '.mjs': 'application/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf',
+    '.eot': 'application/vnd.ms-fontobject',
+    '.webp': 'image/webp',
+    '.avif': 'image/avif',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm'
+  };
+  return mimeTypes[ext] || 'application/octet-stream';
 }
 
-function getConfigPath() {
-  return path.join(app.getPath('userData'), 'oms-desktop.config.json');
-}
+function registerPortalProtocol() {
+  const portalsDir = getPortalsDir();
 
-function loadConfig() {
-  const userConfigPath = getConfigPath();
-  let raw = DEFAULT_CONFIG;
+  electronProtocol.handle('oms-portal', (request) => {
+    const url = new URL(request.url);
+    const portal = url.hostname; // 'invoice', 'media', 'admin'
+    let filePath = decodeURIComponent(url.pathname);
 
-  try {
-    if (fs.existsSync(userConfigPath)) {
-      raw = JSON.parse(fs.readFileSync(userConfigPath, 'utf8'));
-    } else {
-      const candidates = [
-        path.join(process.resourcesPath || __dirname, 'config', 'oms-desktop.config.json'),
-        path.join(__dirname, 'config', 'oms-desktop.config.json')
-      ];
-      const bundledPath = candidates.find((candidate) => fs.existsSync(candidate));
-      if (bundledPath) raw = JSON.parse(fs.readFileSync(bundledPath, 'utf8'));
-      fs.mkdirSync(path.dirname(userConfigPath), { recursive: true });
-      fs.writeFileSync(userConfigPath, JSON.stringify(raw, null, 2), 'utf8');
+    // Default to index.html
+    if (filePath === '/' || filePath === '' || !filePath) {
+      filePath = '/index.html';
     }
-  } catch (error) {
-    console.error('Unable to load OMS Desktop configuration:', error);
-    raw = DEFAULT_CONFIG;
-  }
 
-  appConfig = normalizeConfig(raw);
+    const fullPath = path.join(portalsDir, portal, filePath);
+
+    // Security: prevent path traversal
+    const resolvedPath = path.resolve(fullPath);
+    const portalRoot = path.resolve(path.join(portalsDir, portal));
+    if (!resolvedPath.startsWith(portalRoot)) {
+      return new Response('Forbidden', { status: 403 });
+    }
+
+    // Serve the file, or fallback to index.html for SPA routing
+    let servePath = fullPath;
+    if (!fs.existsSync(fullPath)) {
+      servePath = path.join(portalsDir, portal, 'index.html');
+    }
+
+    if (!fs.existsSync(servePath)) {
+      return new Response('Not Found', { status: 404 });
+    }
+
+    try {
+      const fileBuffer = fs.readFileSync(servePath);
+      const mimeType = getMimeType(servePath);
+      return new Response(fileBuffer, {
+        status: 200,
+        headers: { 'Content-Type': mimeType }
+      });
+    } catch (err) {
+      return new Response('Internal Error', { status: 500 });
+    }
+  });
 }
 
+// ==========================================
+// Backend Health Check
+// ==========================================
 function requestUrl(url, timeoutMs = 8000) {
   return new Promise((resolve) => {
-    if (!isAllowedPortalUrl(url)) return resolve({ online: false, configured: false });
+    if (!url || typeof url !== 'string') return resolve({ online: false, configured: false });
     let parsed;
     try { parsed = new URL(url); } catch { return resolve({ online: false, configured: false }); }
     const client = parsed.protocol === 'https:' ? https : http;
     const req = client.get(parsed, { timeout: timeoutMs, headers: { 'User-Agent': `OMS-Desktop/${app.getVersion()}` } }, (res) => {
-      // Any HTTP response below 500 confirms that the host is reachable.
       const online = res.statusCode < 500;
       res.resume();
       resolve({ online, configured: true, statusCode: res.statusCode });
@@ -93,19 +141,26 @@ function requestUrl(url, timeoutMs = 8000) {
 
 async function getServiceStatus() {
   const entries = await Promise.all(PORTALS.map(async (name) => {
-    const config = appConfig.portals[name];
-    const result = await requestUrl(config.healthUrl || config.url);
-    return [name, { ...result, url: config.url }];
+    const backendUrl = BACKEND_URLS[name];
+    const healthUrl = backendUrl ? `${backendUrl}/api/health` : '';
+    const result = await requestUrl(healthUrl);
+    return [name, { ...result, url: `oms-portal://${name}/` }];
   }));
   return Object.fromEntries(entries);
 }
 
+// ==========================================
+// Security
+// ==========================================
 function assertTrustedIpc(event) {
   if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame) {
     throw new Error('Untrusted IPC sender');
   }
 }
 
+// ==========================================
+// Window Management
+// ==========================================
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -113,6 +168,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: 'OMS Business Suite - One Media Solution',
+    icon: path.join(__dirname, 'assets', 'icon.ico'),
     frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#0B0F17',
@@ -138,7 +194,6 @@ function createWindow() {
     return { action: 'deny' };
   });
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
-    // The shell itself must remain local. Portal navigation happens inside its iframes.
     if (navigationUrl.startsWith('file://')) return;
     event.preventDefault();
     openExternalSafely(navigationUrl);
@@ -159,6 +214,9 @@ function openExternalSafely(value) {
   } catch { /* Ignore malformed or unsupported URLs. */ }
 }
 
+// ==========================================
+// IPC Handlers
+// ==========================================
 function registerIpc() {
   ipcMain.on('window-minimize', (event) => {
     if (event.sender === mainWindow?.webContents && mainWindow) mainWindow.minimize();
@@ -177,7 +235,14 @@ function registerIpc() {
   });
   ipcMain.handle('get-app-config', (event) => {
     assertTrustedIpc(event);
-    return appConfig;
+    // Return portal URLs using the custom protocol
+    return {
+      portals: {
+        invoice: { url: 'oms-portal://invoice/', healthUrl: `${BACKEND_URLS.invoice}/api/health` },
+        media: { url: 'oms-portal://media/', healthUrl: `${BACKEND_URLS.media}/api/health` },
+        admin: { url: 'oms-portal://admin/', healthUrl: `${BACKEND_URLS.admin}/api/health` }
+      }
+    };
   });
   ipcMain.handle('check-services', async (event) => {
     assertTrustedIpc(event);
@@ -204,9 +269,12 @@ function registerIpc() {
   });
 }
 
+// ==========================================
+// App Lifecycle
+// ==========================================
 app.setAppUserModelId(APP_ID);
 app.whenReady().then(() => {
-  loadConfig();
+  registerPortalProtocol();
   registerIpc();
   createWindow();
   app.on('activate', () => {
