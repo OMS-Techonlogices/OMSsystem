@@ -180,7 +180,22 @@ async function requireMediaOrAccountingAccess(
 
     const user = users[0];
 
-    if (!MEDIA_INVOICE_ROLES.includes(user.role)) {
+    const isReadOnlyUser =
+      user.username === 'manager' ||
+      user.username === 'مدير' ||
+      (typeof user.name === 'string' && user.name.includes('عرض فقط'));
+
+    if (isReadOnlyUser) {
+      res.status(403).json({ success: false, message: 'هذا الحساب للعرض فقط ولا يملك صلاحية إصدار الفواتير' });
+      return;
+    }
+
+    const hasMediaPermission = ['MEDIA', 'ALL'].includes(user.systemAccess);
+    const hasAccountingPermission =
+      ACCOUNTING_ROLES.includes(user.role) &&
+      ['INVOICE', 'ALL'].includes(user.systemAccess);
+
+    if (!hasMediaPermission && !hasAccountingPermission && !MEDIA_INVOICE_ROLES.includes(user.role)) {
       res.status(403).json({ success: false, message: 'غير مصرح لك بإصدار الفواتير' });
       return;
     }
