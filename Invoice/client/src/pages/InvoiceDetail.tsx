@@ -136,10 +136,49 @@ export const InvoiceDetail: React.FC = () => {
     }
   };
 
+  // Format phone number for wa.me (digits only, auto-prepend Egypt country code 20 for 01xxxxxxxxx)
+  const formatWhatsAppPhone = (raw: string): string => {
+    let digits = raw.replace(/[^\d]/g, '');
+    if (digits.startsWith('00')) {
+      digits = digits.slice(2);
+    }
+    if (digits.length === 11 && digits.startsWith('01')) {
+      digits = `2${digits}`;
+    }
+    return digits;
+  };
+
   // Send Invoice
   const handleSendInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!invoice) return;
+
+    if (deliveryChannel === 'WHATSAPP') {
+      const cleanPhone = formatWhatsAppPhone(deliveryRecipient);
+      if (!cleanPhone) {
+        setMessage({ text: 'يرجى إدخال رقم واتساب صحيح', type: 'error' });
+        return;
+      }
+
+      const clientName = invoice.client?.name || 'العميل العزيز';
+      const totalFormatted = Number(invoice.totalAmount || 0).toLocaleString('ar-EG');
+      const dueDateFormatted = invoice.dueDate
+        ? new Date(invoice.dueDate).toLocaleDateString('ar-EG')
+        : '-';
+
+      const whatsappMessage = [
+        `مرحباً ${clientName}،`,
+        `نرفق لحضراتكم تفاصيل الفاتورة الضريبية الصادرة من شركة OMS:`,
+        `• رقم الفاتورة: ${invoice.invoiceNumber}`,
+        `• المبلغ الإجمالي: ${totalFormatted} ج.م`,
+        `• تاريخ الاستحقاق: ${dueDateFormatted}`,
+        `شكراً لتعاملكم معنا.`,
+      ].join('\n');
+
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+    }
+
     setActionLoading(true);
     const res = await apiRequest('/delivery/send', {
       method: 'POST',
@@ -152,7 +191,13 @@ export const InvoiceDetail: React.FC = () => {
     setActionLoading(false);
     setShowDeliveryModal(false);
     if (res.success) {
-      setMessage({ text: res.message || 'تم إرسال الفاتورة بنجاح', type: 'success' });
+      setMessage({
+        text:
+          deliveryChannel === 'WHATSAPP'
+            ? 'تم فتح واتساب برسالة الفاتورة وتوثيق العملية في سجل التسليم'
+            : res.message || 'تم إرسال الفاتورة بنجاح',
+        type: 'success',
+      });
       fetchInvoice();
     } else {
       setMessage({ text: res.message || 'فشل إرسال الفاتورة', type: 'error' });
@@ -682,8 +727,8 @@ export const InvoiceDetail: React.FC = () => {
               </div>
 
               {deliveryChannel === 'WHATSAPP' && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-                  تنبيه رسمي: يتم الإرسال عبر منصة WhatsApp Business Platform المعتمدة وبموافقة العميل المسبقة.
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-800">
+                  سيتم فتح محادثة واتساب (WhatsApp Web / Desktop) على رقم العميل برسالة جاهزة تحتوي على رقم الفاتورة والمبلغ وتاريخ الاستحقاق، مع إمكانية إرفاق ملف الـ PDF وتوثيق العملية في السجل.
                 </div>
               )}
 
@@ -693,7 +738,7 @@ export const InvoiceDetail: React.FC = () => {
                   disabled={actionLoading}
                   className="flex-1 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold rounded-xl"
                 >
-                  إرسال وتوثيق المحاولة
+                  {deliveryChannel === 'WHATSAPP' ? 'فتح واتساب وتوثيق الإرسال' : 'إرسال وتوثيق المحاولة'}
                 </button>
                 <button
                   type="button"
