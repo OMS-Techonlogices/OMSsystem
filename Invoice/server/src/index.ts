@@ -17,33 +17,31 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 5001;
 
-// إعدادات CORS مرنة وشاملة لـ GitHub Pages و Vercel والمحلي
+// إعدادات CORS مرنة وشاملة لـ GitHub Pages و Vercel وتطبيق Desktop
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // السماح بالطلبات بدون origin (مثل Postman أو تطبيقات الموبايل)
-    if (!origin) return callback(null, true);
+    // السماح بالطلبات بدون origin (تطبيقات الديسكتوب Electron، Postman، أدوات النظام)
+    if (!origin || origin === 'null') return callback(null, true);
 
-    const allowedOrigins = [
-      'https://matrix-data-egypt.github.io',
-      'https://github.io',
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-    ];
+    const isLocalhost =
+      /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+      origin.startsWith('app://') ||
+      origin.startsWith('file://');
 
     if (
-      allowedOrigins.includes(origin) ||
+      isLocalhost ||
       origin.endsWith('.github.io') ||
-      origin.endsWith('.vercel.app')
+      origin.endsWith('.vercel.app') ||
+      origin === 'https://matrix-data-egypt.github.io'
     ) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
     }
+
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 };
 
 app.use(cors(corsOptions));

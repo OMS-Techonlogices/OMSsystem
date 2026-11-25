@@ -24,6 +24,7 @@ backend/data/
 
 # Executables & Desktop release artifacts
 *.exe
+*.zip
 release/
 desktop/release/
 desktop/dist-exe/

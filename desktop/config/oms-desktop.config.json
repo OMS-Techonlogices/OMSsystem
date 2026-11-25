@@ -1,0 +1,16 @@
+{
+  "portals": {
+    "invoice": {
+      "url": "",
+      "healthUrl": ""
+    },
+    "media": {
+      "url": "",
+      "healthUrl": ""
+    },
+    "admin": {
+      "url": "",
+      "healthUrl": ""
+    }
+  }
+}

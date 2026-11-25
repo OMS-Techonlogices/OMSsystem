@@ -12,9 +12,17 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is missing');
 }
 
+const isProductionOrCloud = Boolean(
+  process.env.VERCEL ||
+  process.env.NODE_ENV === 'production' ||
+  (databaseUrl && databaseUrl.includes('supabase')) ||
+  (databaseUrl && databaseUrl.includes('pooler')) ||
+  (databaseUrl && databaseUrl.includes('neon.tech'))
+);
+
 export const pool = new Pool({
   connectionString: databaseUrl,
-  ssl: false,
+  ssl: isProductionOrCloud ? { rejectUnauthorized: false } : false,
 });
 
 pool.on('error', (err) => {

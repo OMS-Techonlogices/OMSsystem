@@ -658,7 +658,7 @@
                 </div>
               </div>
               <div class="card-main-title">قسم المحاسبة والفواتير</div>
-              <div class="card-port-tag">OMS INVOICE • Port 5173</div>
+              <div class="card-port-tag" data-portal-tag="invoice">OMS INVOICE • CLOUD PORTAL</div>
               <p class="card-desc">
                 إدارة دورة حياة الفواتير المحاسبية، الضرائب الرسمية (VAT 14% و WHT 1%)، الاعتمادات المالية متعددة المستويات، وسجلات المدفوعات والعملاء.
               </p>
@@ -680,7 +680,7 @@
                 </div>
               </div>
               <div class="card-main-title">قسم الميديا والإعلانات</div>
-              <div class="card-port-tag">OMS MEDIA • Port 5174</div>
+              <div class="card-port-tag" data-portal-tag="media">OMS MEDIA • CLOUD PORTAL</div>
               <p class="card-desc">
                 تخطيط الحملات الإعلانية ومتابعتها، إدارة القنوات التلفزيونية والموردين، حساب التكاليف وهوامش الأرباح وتصدير تقارير Excel و CSV.
               </p>
@@ -702,7 +702,7 @@
                 </div>
               </div>
               <div class="card-main-title">بوابة الإدارة المركزية</div>
-              <div class="card-port-tag">OMS ADMIN • Port 5175</div>
+              <div class="card-port-tag" data-portal-tag="admin">OMS ADMIN • CLOUD PORTAL</div>
               <p class="card-desc">
                 لوحة الإدارة المركزية لإدارة حسابات الموظفين، ضبط وتوزيع صلاحيات الوصول للأنظمة (MEDIA / INVOICE / ALL)، وتأمين بيئة العمل.
               </p>
@@ -718,11 +718,11 @@
         <!-- Server Controls Quick Banner -->
         <div class="services-banner">
           <div>
-            <div class="banner-title">⚡ الخوادم والاتصال المحلي</div>
-            <div class="banner-sub">يمكنك تشغيل كافة خوادم المنظومة دفعة واحدة أو التحقق من جاهزية الاتصال.</div>
+            <div class="banner-title">☁️ خدمات OMS السحابية</div>
+            <div class="banner-sub">تحقق من اتصال بوابات OMS السحابية قبل بدء العمل.</div>
           </div>
           <div class="banner-actions">
-            <button class="btn-action-banner" onclick="startAllServices()">▶ تشغيل كافة الخدمات</button>
+            <button class="btn-action-banner" onclick="startAllServices()">↻ إعادة فحص الاتصال</button>
             <button class="btn-secondary-banner" onclick="checkAllServices(true)">↻ فحص الاتصال</button>
           </div>
         </div>
@@ -731,13 +731,13 @@
     </section>
 
     <!-- 2. Invoice Portal Frame -->
-    <iframe id="frame-invoice" class="portal-frame" data-src="http://localhost:5173" allow="clipboard-read; clipboard-write; printing"></iframe>
+    <iframe id="frame-invoice" class="portal-frame" data-src="" allow="clipboard-read; clipboard-write; printing"></iframe>
 
     <!-- 3. Media Portal Frame -->
-    <iframe id="frame-media" class="portal-frame" data-src="http://localhost:5174" allow="clipboard-read; clipboard-write; printing"></iframe>
+    <iframe id="frame-media" class="portal-frame" data-src="" allow="clipboard-read; clipboard-write; printing"></iframe>
 
     <!-- 4. Admin Portal Frame -->
-    <iframe id="frame-admin" class="portal-frame" data-src="http://localhost:5175" allow="clipboard-read; clipboard-write; printing"></iframe>
+    <iframe id="frame-admin" class="portal-frame" data-src="" allow="clipboard-read; clipboard-write; printing"></iframe>
 
     <!-- Offline Notification Screen -->
     <div id="offline-screen" class="offline-overlay">
@@ -745,10 +745,10 @@
         <div class="offline-icon">⚠️</div>
         <div class="offline-title" id="offline-system-name">النظام غير متاح حالياً</div>
         <div class="offline-desc" id="offline-system-desc">
-          خادم هذا القسم غير متصل حالياً أو ما زال قيد الإقلاع. اضغط على الزر أدناه لبدء تشغيله فوراً.
+          تعذر الوصول إلى بوابة هذا القسم. تحقق من اتصال الإنترنت أو إعداد عنوان البوابة.
         </div>
         <div style="display: flex; gap: 10px; justify-content: center;">
-          <button class="btn-action-banner" onclick="startAllServices()">🚀 تشغيل الخوادم</button>
+          <button class="btn-action-banner" onclick="startAllServices()">↻ إعادة المحاولة</button>
           <button class="btn-secondary-banner" onclick="switchPortal('welcome')">العودة للاختيار</button>
           <button class="btn-secondary-banner" onclick="checkAllServices(true)">↻ إعادة فحص</button>
         </div>
@@ -760,196 +760,156 @@
   <script>
     let currentPortal = 'welcome';
     let currentZoom = 1.0;
-    const servicesState = {
-      invoice: false,
-      media: false,
-      admin: false
+    let portalUrls = { invoice: '', media: '', admin: '' };
+    const servicesState = { invoice: false, media: false, admin: false };
+    const portalNames = {
+      invoice: 'قسم المحاسبة والفواتير (Invoice System)',
+      media: 'قسم الميديا والإعلانات (Media Department)',
+      admin: 'بوابة الإدارة المركزية (Admin Portal)'
     };
 
-    const portalUrls = {
-      invoice: 'http://localhost:5173',
-      media: 'http://localhost:5174',
-      admin: 'http://localhost:5175'
-    };
-
-    function switchPortal(portal) {
-      currentPortal = portal;
-
-      // Update Navigation Tabs State
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.portal === portal);
-      });
-
-      // Update Active Frames & Views
-      document.querySelectorAll('.portal-frame').forEach(frame => {
-        frame.classList.remove('active');
-      });
-
-      const welcomeScreen = document.getElementById('welcome-screen');
-      const offlineScreen = document.getElementById('offline-screen');
-
-      if (portal === 'welcome') {
-        welcomeScreen.classList.add('active');
-        offlineScreen.classList.remove('active');
-      } else {
-        welcomeScreen.classList.remove('active');
-        const activeFrame = document.getElementById(`frame-${portal}`);
-        if (activeFrame) {
-          activeFrame.classList.add('active');
-          if (!activeFrame.src || activeFrame.src === 'about:blank' || activeFrame.src === window.location.href) {
-            activeFrame.src = activeFrame.dataset.src || portalUrls[portal];
-          }
+    async function initializeDesktop() {
+      if (!window.omsDesktop) {
+        showConfigurationMessage('يجب تشغيل OMS من تطبيق Desktop الرسمي.');
+        return;
+      }
+      try {
+        const config = await window.omsDesktop.getAppConfig();
+        for (const portal of Object.keys(portalUrls)) {
+          portalUrls[portal] = config?.portals?.[portal]?.url || '';
+          const frame = document.getElementById(`frame-${portal}`);
+          if (frame) frame.dataset.src = portalUrls[portal];
+          const tag = document.querySelector(`[data-portal-tag="${portal}"]`);
+          if (tag) tag.textContent = portalUrls[portal] ? 'CLOUD PORTAL' : 'NOT CONFIGURED';
         }
+      } catch (error) {
+        console.error('Unable to load OMS Desktop configuration:', error);
+      }
 
-        // Show offline warning if server not detected
-        if (servicesState[portal] === false) {
-          showOfflineScreen(portal);
-        } else {
-          offlineScreen.classList.remove('active');
-        }
+      const params = new URLSearchParams(window.location.search);
+      const initial = params.get('initialPortal');
+      switchPortal(['invoice', 'media', 'admin'].includes(initial) ? initial : 'welcome');
+      await checkAllServices();
+      if (window.omsDesktop) {
+        window.omsDesktop.onWindowStateChange((state) => {
+          const maxBtn = document.getElementById('max-btn');
+          if (maxBtn) maxBtn.innerHTML = state.isMaximized ? '&#10064;' : '&#9633;';
+        });
       }
     }
 
-    function showOfflineScreen(portal) {
-      const names = {
-        invoice: 'قسم المحاسبة والفواتير (Invoice System)',
-        media: 'قسم الميديا والإعلانات (Media Department)',
-        admin: 'بوابة الإدارة المركزية (Admin Portal)'
-      };
-      document.getElementById('offline-system-name').textContent = `${names[portal]} غير متاح حالياً`;
-      document.getElementById('offline-system-desc').textContent = `خادم هذا القسم على المنفذ ${portalUrls[portal]} لم يستجب. تأكد من تشغيل السيرفرات بالضغط أدناه.`;
+    function switchPortal(portal) {
+      if (!['welcome', 'invoice', 'media', 'admin'].includes(portal)) portal = 'welcome';
+      currentPortal = portal;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.portal === portal);
+      });
+      document.querySelectorAll('.portal-frame').forEach(frame => frame.classList.remove('active'));
+
+      const welcomeScreen = document.getElementById('welcome-screen');
+      const offlineScreen = document.getElementById('offline-screen');
+      if (portal === 'welcome') {
+        welcomeScreen.classList.add('active');
+        offlineScreen.classList.remove('active');
+        return;
+      }
+
+      welcomeScreen.classList.remove('active');
+      const activeFrame = document.getElementById(`frame-${portal}`);
+      if (!portalUrls[portal]) {
+        showOfflineScreen(portal, true);
+        return;
+      }
+      if (activeFrame) {
+        activeFrame.classList.add('active');
+        if (activeFrame.dataset.loaded !== 'true') {
+          activeFrame.src = portalUrls[portal];
+          activeFrame.dataset.loaded = 'true';
+        }
+      }
+      if (servicesState[portal]) offlineScreen.classList.remove('active');
+      else showOfflineScreen(portal, false);
+    }
+
+    function showOfflineScreen(portal, notConfigured = false) {
+      document.getElementById('offline-system-name').textContent = `${portalNames[portal]} غير متاح حالياً`;
+      document.getElementById('offline-system-desc').textContent = notConfigured
+        ? `عنوان البوابة السحابية لقسم ${portal.toUpperCase()} غير مضبوط بعد. أضف رابط الإنتاج في ملف oms-desktop.config.json.`
+        : `تعذر الاتصال بالبوابة: ${portalUrls[portal]}. تحقق من الإنترنت أو حالة الخدمة ثم أعد المحاولة.`;
+      document.getElementById('offline-screen').classList.add('active');
+    }
+
+    function showConfigurationMessage(message) {
+      document.getElementById('offline-system-name').textContent = 'إعداد OMS Desktop مطلوب';
+      document.getElementById('offline-system-desc').textContent = message;
       document.getElementById('offline-screen').classList.add('active');
     }
 
     function reloadCurrentPortal() {
-      if (currentPortal === 'welcome') {
-        checkAllServices(true);
-        return;
-      }
+      if (currentPortal === 'welcome') return checkAllServices(true);
       reloadFrame(currentPortal);
     }
 
     function reloadFrame(portal) {
       const frame = document.getElementById(`frame-${portal}`);
-      if (frame) {
+      if (frame && portalUrls[portal]) {
         frame.src = portalUrls[portal];
+        frame.dataset.loaded = 'true';
       }
     }
 
-    function zoomIn() {
-      currentZoom = Math.min(1.5, currentZoom + 0.05);
-      applyZoom();
-    }
-
-    function zoomOut() {
-      currentZoom = Math.max(0.75, currentZoom - 0.05);
-      applyZoom();
-    }
-
+    function zoomIn() { currentZoom = Math.min(1.5, currentZoom + 0.05); applyZoom(); }
+    function zoomOut() { currentZoom = Math.max(0.75, currentZoom - 0.05); applyZoom(); }
     function applyZoom() {
-      document.querySelectorAll('.portal-frame').forEach(f => {
-        f.style.zoom = currentZoom;
-      });
+      document.querySelectorAll('.portal-frame').forEach(frame => { frame.style.zoom = currentZoom; });
     }
 
     function printCurrentPortal() {
-      if (window.omsDesktop) {
-        window.omsDesktop.print();
-      } else {
-        window.print();
-      }
+      if (window.omsDesktop) window.omsDesktop.print();
+      else window.print();
     }
 
     async function startAllServices() {
-      if (window.omsDesktop) {
-        await window.omsDesktop.startServices();
-        alert('تم إرسال أمر تشغيل خوادم OMS بنجاح! جاري الانتظار والفحص...');
-        setTimeout(() => checkAllServices(true), 3500);
-      }
+      // Cloud services are deployed independently; the desktop app never starts server processes.
+      await checkAllServices(true);
     }
 
     async function checkAllServices(userTriggered = false) {
       if (!window.omsDesktop) return;
-
       try {
-        const res = await window.omsDesktop.checkServices();
-        
-        servicesState.invoice = res.invoice.frontend;
-        servicesState.media = res.media.frontend;
-        servicesState.admin = res.admin.frontend;
-
-        // Update Nav Dots
-        updateDot('dot-invoice', res.invoice.frontend);
-        updateDot('dot-media', res.media.frontend);
-        updateDot('dot-admin', res.admin.frontend);
-
-        // Update Welcome Screen Badges
-        updateWelcomeBadge('badge-invoice', res.invoice.frontend);
-        updateWelcomeBadge('badge-media', res.media.frontend);
-        updateWelcomeBadge('badge-admin', res.admin.frontend);
-
-        // If currently on an offline portal that just came online, reload it
-        if (currentPortal !== 'welcome' && servicesState[currentPortal]) {
-          const offlineScreen = document.getElementById('offline-screen');
-          if (offlineScreen.classList.contains('active')) {
-            offlineScreen.classList.remove('active');
-            reloadFrame(currentPortal);
-          }
+        const result = await window.omsDesktop.checkServices();
+        for (const portal of ['invoice', 'media', 'admin']) {
+          const status = result[portal];
+          servicesState[portal] = Boolean(status?.online && status?.configured);
+          updateDot(`dot-${portal}`, servicesState[portal]);
+          updateWelcomeBadge(`badge-${portal}`, servicesState[portal], status?.configured !== false);
         }
-
-        if (userTriggered) {
-          console.log('Services check completed:', res);
+        if (currentPortal !== 'welcome') {
+          if (!portalUrls[currentPortal]) showOfflineScreen(currentPortal, true);
+          else if (servicesState[currentPortal]) document.getElementById('offline-screen').classList.remove('active');
+          else showOfflineScreen(currentPortal, false);
         }
-      } catch (err) {
-        console.error('Failed to check services:', err);
+        if (userTriggered) console.log('OMS Cloud service status:', result);
+      } catch (error) {
+        console.error('Failed to check OMS Cloud services:', error);
       }
     }
 
-    function updateDot(id, isOnline) {
+    function updateDot(id, online) {
       const dot = document.getElementById(id);
-      if (dot) {
-        dot.className = `status-dot ${isOnline ? 'online' : 'offline'}`;
-      }
+      if (dot) dot.className = `status-dot ${online ? 'online' : 'offline'}`;
     }
 
-    function updateWelcomeBadge(id, isOnline) {
+    function updateWelcomeBadge(id, online, configured = true) {
       const badge = document.getElementById(id);
       if (!badge) return;
-
-      if (isOnline) {
-        badge.className = 'portal-badge-status online';
-        badge.innerHTML = '<span class="status-dot online"></span><span>متصل وجاهز</span>';
-      } else {
-        badge.className = 'portal-badge-status offline';
-        badge.innerHTML = '<span class="status-dot offline"></span><span>غير متصل</span>';
-      }
+      const label = !configured ? 'يحتاج إعداد الرابط' : online ? 'متصل وجاهز' : 'غير متصل';
+      badge.className = `portal-badge-status ${online ? 'online' : 'offline'}`;
+      badge.innerHTML = `<span class="status-dot ${online ? 'online' : 'offline'}"></span><span>${label}</span>`;
     }
 
-    // Auto check services periodically every 4 seconds
-    setInterval(checkAllServices, 4000);
-
-    // Initial load
-    window.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(window.location.search);
-      const initial = params.get('initialPortal');
-      if (initial && ['invoice', 'media', 'admin'].includes(initial)) {
-        switchPortal(initial);
-      } else {
-        switchPortal('welcome'); // Open the Welcome Selection Screen by default!
-      }
-
-      checkAllServices();
-
-      // Listen for window state changes
-      if (window.omsDesktop) {
-        window.omsDesktop.onWindowStateChange((state) => {
-          const maxBtn = document.getElementById('max-btn');
-          if (maxBtn) {
-            maxBtn.innerHTML = state.isMaximized ? '&#10064;' : '&#9633;';
-          }
-        });
-      }
-    });
+    setInterval(() => checkAllServices(), 15000);
+    window.addEventListener('DOMContentLoaded', initializeDesktop);
   </script>
 </body>
 </html>

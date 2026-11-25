@@ -15,13 +15,28 @@ const JWT_SECRET = process.env.JWT_SECRET || 'oms_admin_jwt_secret_secure_key_20
 
 app.use(
   cors({
-    origin: [
-      'https://github.io',
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-    ],
+    origin: (origin, callback) => {
+      if (!origin || origin === 'null') return callback(null, true);
+
+      const isLocalhost =
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+        origin.startsWith('app://') ||
+        origin.startsWith('file://');
+
+      if (
+        isLocalhost ||
+        origin.endsWith('.github.io') ||
+        origin.endsWith('.vercel.app') ||
+        origin === 'https://matrix-data-egypt.github.io'
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   })
 );
 app.use(express.json());
@@ -409,8 +424,12 @@ app.delete('/api/users/:id', requireAdmin, async (req: AuthRequest, res: Respons
   }
 });
 
-// Start Server on 0.0.0.0 for Render
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 OMS Admin Hub API running on port ${PORT}`);
-  console.log(`🌟 System: OMS Admin | Developed by MDE – Matrix Data Egypt`);
-});
+// Start Server on 0.0.0.0 for Render / Local
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 OMS Admin Hub API running on port ${PORT}`);
+    console.log(`🌟 System: OMS Admin | Developed by MDE – Matrix Data Egypt`);
+  });
+}
+
+export default app;

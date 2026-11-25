@@ -19,30 +19,24 @@ const app = express();
 // CORS
 // ==========================================
 
-const allowedOrigins = [
-  'https://matrix-data-egypt.github.io',
-  'https://oms-tur2.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-  ...(process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
-    .split(',')
-    .map((url) => url.trim().replace(/\/$/, ''))
-    .filter(Boolean),
-];
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      const isAllowedVercelPreview =
-        /^https:\/\/oms-tur2-[a-z0-9-]+-pixelrun2000-9580s-projects\.vercel\.app$/.test(
-          origin || ''
-        );
+      if (!origin || origin === 'null') {
+        return callback(null, true);
+      }
+
+      const isLocalhost =
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+        origin.startsWith('app://') ||
+        origin.startsWith('file://');
 
       if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        isAllowedVercelPreview
+        isLocalhost ||
+        origin.endsWith('.github.io') ||
+        origin.endsWith('.vercel.app') ||
+        origin === 'https://matrix-data-egypt.github.io' ||
+        origin === 'https://oms-tur2.vercel.app'
       ) {
         return callback(null, true);
       }
@@ -50,6 +44,8 @@ app.use(
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   })
 );
 
