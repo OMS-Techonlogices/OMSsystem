@@ -1567,7 +1567,7 @@ export const Dashboard: React.FC = () => {
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>مفوترة ✓</span>
                           </div>
-                        ) : (
+                        ) : !isReadOnly ? (
                           <button
                             type="button"
                             onClick={() => handleIssueInvoice(record.id)}
@@ -1578,6 +1578,8 @@ export const Dashboard: React.FC = () => {
                             <Receipt className="w-3 h-3" />
                             <span>إصدار فاتورة</span>
                           </button>
+                        ) : (
+                          <span className="text-[11px] text-neutral-400 font-bold">للعرض فقط</span>
                         )}
                       </td>
                     </tr>

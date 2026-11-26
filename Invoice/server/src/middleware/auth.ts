@@ -49,6 +49,16 @@ export const authenticateToken = async (
       return;
     }
 
+    const isReadOnlyUser =
+      user.username === 'manager' ||
+      user.username === 'مدير' ||
+      (typeof user.name === 'string' && user.name.includes('عرض فقط'));
+
+    if (isReadOnlyUser && req.method !== 'GET') {
+      res.status(403).json({ success: false, message: 'هذا الحساب للعرض فقط ولا يملك صلاحية الإضافة أو التعديل' });
+      return;
+    }
+
     req.user = {
       id: user.id,
       email: user.email,
