@@ -674,6 +674,28 @@
             </button>
           </div>
 
+          <!-- Card 3: Central Admin -->
+          <div class="portal-card" onclick="switchPortal('admin')">
+            <div>
+              <div class="card-head">
+                <div class="card-icon-box">🛡️</div>
+                <div id="badge-admin" class="portal-badge-status offline">
+                  <span class="status-dot offline"></span>
+                  <span>فحص...</span>
+                </div>
+              </div>
+              <div class="card-main-title">بوابة الإدارة المركزية</div>
+              <div class="card-port-tag" data-portal-tag="admin">OMS ADMIN • CLOUD PORTAL</div>
+              <p class="card-desc">
+                لوحة الإدارة المركزية لإدارة حسابات الموظفين، ضبط وتوزيع صلاحيات الوصول للأنظمة (MEDIA / INVOICE / ALL)، وتأمين بيئة العمل.
+              </p>
+            </div>
+            <button class="card-enter-btn">
+              <span>تسجيل الدخول لبوابة الإدارة</span>
+              <span>←</span>
+            </button>
+          </div>
+
         </div>
 
         <!-- Server Controls Quick Banner -->
@@ -697,6 +719,9 @@
     <!-- 3. Media Portal Frame -->
     <iframe id="frame-media" class="portal-frame" data-src="" allow="clipboard-read; clipboard-write; printing"></iframe>
 
+    <!-- 4. Admin Portal Frame -->
+    <iframe id="frame-admin" class="portal-frame" data-src="" allow="clipboard-read; clipboard-write; printing"></iframe>
+
     <!-- Offline Notification Screen -->
     <div id="offline-screen" class="offline-overlay">
       <div class="offline-box">
@@ -718,11 +743,12 @@
   <script>
     let currentPortal = 'welcome';
     let currentZoom = 1.0;
-    let portalUrls = { invoice: '', media: '' };
-    const servicesState = { invoice: false, media: false };
+    let portalUrls = { invoice: '', media: '', admin: '' };
+    const servicesState = { invoice: false, media: false, admin: false };
     const portalNames = {
       invoice: 'قسم المحاسبة والفواتير (Invoice System)',
-      media: 'قسم الميديا والإعلانات (Media Department)'
+      media: 'قسم الميديا والإعلانات (Media Department)',
+      admin: 'بوابة الإدارة المركزية (Admin Portal)'
     };
 
     async function initializeDesktop() {
@@ -745,7 +771,7 @@
 
       const params = new URLSearchParams(window.location.search);
       const initial = params.get('initialPortal');
-      switchPortal(['invoice', 'media'].includes(initial) ? initial : 'welcome');
+      switchPortal(['invoice', 'media', 'admin'].includes(initial) ? initial : 'welcome');
       await checkAllServices();
       if (window.omsDesktop) {
         window.omsDesktop.onWindowStateChange((state) => {
@@ -756,7 +782,7 @@
     }
 
     function switchPortal(portal) {
-      if (!['welcome', 'invoice', 'media'].includes(portal)) portal = 'welcome';
+      if (!['welcome', 'invoice', 'media', 'admin'].includes(portal)) portal = 'welcome';
       currentPortal = portal;
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.portal === portal);
@@ -835,7 +861,7 @@
       if (!window.omsDesktop) return;
       try {
         const result = await window.omsDesktop.checkServices();
-        for (const portal of ['invoice', 'media']) {
+        for (const portal of ['invoice', 'media', 'admin']) {
           const status = result[portal];
           servicesState[portal] = Boolean(status?.online && status?.configured);
           updateDot(`dot-${portal}`, servicesState[portal]);
