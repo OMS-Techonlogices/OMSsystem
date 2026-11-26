@@ -61,6 +61,8 @@ export const Dashboard: React.FC = () => {
     supplierId: '',
     channelId: '',
     contentId: '',
+    quantityType: '' as '' | 'MONTH' | 'COUNT',
+    quantityValue: 1,
     month: (() => {
       const now = new Date();
       const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -261,6 +263,16 @@ export const Dashboard: React.FC = () => {
     };
   };
 
+  // Helper to extract Quantity / Duration unit (عدد الشهور / عدد الأعداد) from notes
+  const extractRecordUnit = (record: MediaRecord): string => {
+    if (!record.notes) return '-';
+    const monthMatch = record.notes.match(/عدد الشهور:\s*(\d+)/);
+    if (monthMatch) return `${monthMatch[1]} شهر`;
+    const countMatch = record.notes.match(/عدد الأعداد:\s*(\d+)/);
+    if (countMatch) return `${countMatch[1]} عدد`;
+    return '-';
+  };
+
   // Export Data to CSV
   const handleExport = () => {
     const params = buildFilterParams();
@@ -292,6 +304,7 @@ export const Dashboard: React.FC = () => {
         'القناة (Channel)': record.channel?.name || '',
         'نوع المحتوى (Content Type)': record.content?.contentType?.name || 'عام',
         'المحتوى (Content)': record.content?.name || '',
+        'المدة / العدد': extractRecordUnit(record),
         'من تاريخ (From Date)': dates.start,
         'إلى تاريخ (To Date)': dates.end,
         'الشهر (Month)': record.month,
@@ -538,8 +551,16 @@ export const Dashboard: React.FC = () => {
     setActionLoading(true);
     setMessage(null);
 
+    const unitNote =
+      newCampaign.quantityType === 'MONTH'
+        ? `عدد الشهور: ${newCampaign.quantityValue}`
+        : newCampaign.quantityType === 'COUNT'
+          ? `عدد الأعداد: ${newCampaign.quantityValue}`
+          : '';
+
     const formattedNotes = [
       newCampaign.notes,
+      unitNote,
       newCampaign.startDate && newCampaign.endDate
         ? `تاريخ الحملة: من ${newCampaign.startDate} إلى ${newCampaign.endDate}`
         : '',
@@ -575,6 +596,8 @@ export const Dashboard: React.FC = () => {
           supplierId: '',
           channelId: '',
           contentId: '',
+          quantityType: '',
+          quantityValue: 1,
           month: (() => {
       const now = new Date();
       const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -1446,6 +1469,7 @@ export const Dashboard: React.FC = () => {
                 <th className="p-3.5 text-start">Channel</th>
                 <th className="p-3.5 text-start">Content Type</th>
                 <th className="p-3.5 text-start">Content</th>
+                <th className="p-3.5 text-start">المدة / العدد</th>
                 <th className="p-3.5 text-start bg-red-950/60 text-red-200 border-x border-neutral-800">من تاريخ (Start)</th>
                 <th className="p-3.5 text-start bg-red-950/60 text-red-200 border-x border-neutral-800">إلى تاريخ (End)</th>
                 <th className="p-3.5 text-start">الشهر (Month)</th>
@@ -1460,13 +1484,13 @@ export const Dashboard: React.FC = () => {
             <tbody className="divide-y divide-neutral-100 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={14} className="p-12 text-center text-neutral-400 font-bold">
+                  <td colSpan={15} className="p-12 text-center text-neutral-400 font-bold">
                     جاري تحميل البيانات...
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="p-12 text-center text-neutral-400 font-bold">
+                  <td colSpan={15} className="p-12 text-center text-neutral-400 font-bold">
                     لا توجد بيانات مطابقة. يمكنك استخدام زر Import لاستيراد ملف البيانات أو إضافة حملة يدوياً.
                   </td>
                 </tr>
@@ -1514,6 +1538,16 @@ export const Dashboard: React.FC = () => {
 
                       <td className="p-3.5 font-bold text-neutral-800">
                         {record.content?.name || '-'}
+                      </td>
+
+                      <td className="p-3.5 whitespace-nowrap">
+                        {extractRecordUnit(record) !== '-' ? (
+                          <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-extrabold border border-amber-200 text-xs">
+                            {extractRecordUnit(record)}
+                          </span>
+                        ) : (
+                          <span className="text-neutral-400">-</span>
+                        )}
                       </td>
 
                       <td className="p-3.5 font-bold text-neutral-800 whitespace-nowrap bg-red-50/20 border-x border-neutral-100">
@@ -1935,6 +1969,58 @@ export const Dashboard: React.FC = () => {
                   </select>
                 </div>
               </div>
+
+              {/* Dynamic Unit Selection after choosing Content: شهر / عدد + count input */}
+              {newCampaign.contentId && (
+                <div className="bg-amber-50/70 p-3.5 rounded-2xl border border-amber-200/80 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-neutral-700 mb-1">
+                        نوع الاحتساب (شهر / عدد) *
+                      </label>
+                      <select
+                        required
+                        value={newCampaign.quantityType}
+                        onChange={(e) =>
+                          setNewCampaign({
+                            ...newCampaign,
+                            quantityType: e.target.value as '' | 'MONTH' | 'COUNT',
+                            quantityValue: newCampaign.quantityValue || 1,
+                          })
+                        }
+                        className="w-full p-2.5 bg-white border border-neutral-200 rounded-xl font-bold text-xs focus:border-[#DC2626] cursor-pointer"
+                      >
+                        <option value="">اختر: شهر أو عدد...</option>
+                        <option value="MONTH">شهر (شهور)</option>
+                        <option value="COUNT">عدد (أعداد)</option>
+                      </select>
+                    </div>
+
+                    {newCampaign.quantityType && (
+                      <div>
+                        <label className="block text-[11px] font-bold text-neutral-700 mb-1">
+                          {newCampaign.quantityType === 'MONTH' ? 'عدد الشهور *' : 'عدد الأعداد *'}
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          required
+                          value={newCampaign.quantityValue}
+                          onChange={(e) =>
+                            setNewCampaign({
+                              ...newCampaign,
+                              quantityValue: Math.max(1, Number(e.target.value) || 1),
+                            })
+                          }
+                          placeholder={newCampaign.quantityType === 'MONTH' ? 'أدخل عدد الشهور' : 'أدخل عدد الأعداد'}
+                          className="w-full p-2.5 bg-white border border-neutral-200 rounded-xl font-black text-xs text-[#DC2626] focus:border-[#DC2626]"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Campaign Dates Selection: Start Day/Month/Year to End Day/Month/Year */}
               <div className="bg-neutral-50/80 p-3.5 rounded-2xl border border-neutral-200/80 space-y-2.5">
